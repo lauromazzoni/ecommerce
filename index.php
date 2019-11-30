@@ -4,11 +4,15 @@ require_once("vendor/autoload.php");
 
 $app = new \Slim\Slim();
 
-$app->config('debug', true);
+$app->config('debug', true); //se der erro ele avisa
 
 $app->get('/', function() {
     
-	echo "Slim OK";
+	$sql = new Hcode\DB\Sql();
+
+	$result = $sql -> select("SELECT * FROM tb_users");
+
+	echo json_encode($result);
 
 });
 
