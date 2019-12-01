@@ -2,20 +2,22 @@
 
 require_once("vendor/autoload.php");
 
-$app = new \Slim\Slim();
+use \Slim\Slim;
+use \Hcode\Page;
+
+$app = new Slim();
 
 $app->config('debug', true); //se der erro ele avisa
 
 $app->get('/', function() {
     
-	$sql = new Hcode\DB\Sql();
+	$page = new Page(); //vai chamar o construct e adicionar o header na tela
 
-	$result = $sql -> select("SELECT * FROM tb_users");
+	$page -> setTpl("index");
 
-	echo json_encode($result);
-
+	//"bem aqui" ele vai chamar o destruct e incluir o footer.html na tela
 });
 
-$app->run();
+$app->run(); //é o que faz rodar tudo que está acima
 
  ?>
