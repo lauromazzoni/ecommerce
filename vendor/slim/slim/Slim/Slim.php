@@ -412,7 +412,6 @@ class Slim
     public function get()
     {
         $args = func_get_args();
-
         return $this->mapRoute($args)->via(\Slim\Http\Request::METHOD_GET, \Slim\Http\Request::METHOD_HEAD);
     }
 
