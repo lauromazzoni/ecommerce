@@ -38,6 +38,7 @@ $app->get('/', function() {
 //segunda rota (para o Admin)
 $app->get('/admin', function() {
 
+	//verifica se está logado
 	User::verifyLogin();
     
 	$page = new PageAdmin(); //vai chamar o construct e adicionar o header na tela
@@ -78,6 +79,161 @@ $app->get('/admin/logout', function(){
 	header("Location: /admin/login");
 	exit;
 });
+
+
+$app->get('/admin/users', function(){
+	User::verifyLogin();
+	$users = User::listAll();
+	$page = new PageAdmin();
+	$page -> setTpl("users", array(
+		"users"=>$users
+	));
+});
+
+//responde com um html
+$app->get('/admin/users/create', function(){
+	User::verifyLogin();
+	$page = new PageAdmin();
+	$page -> setTpl("users-create");
+});
+
+//Este $app (da linha debaixo) tem que ficar nesta posição do código, isto é, acima do $app da sequência.
+//Se estivesse invertico, como o $app abaixo (delete) tem o :iduser, o Slim framework na hora de deletar, iria parar no no $app de update e não chegaria no $app que tem o delete
+$app->get('/admin/users/:iduser/delete', function($iduser){
+	User::verifyLogin();
+	$user = new User();
+	$user->get((int)$iduser);
+	$user->delete();
+	header("Location: /admin/users");
+	exit;
+
+});
+
+//o :iduser da rota é o $iduser passado como parâmetro na função
+$app->get('/admin/users/:iduser', function($iduser){
+	User::verifyLogin();
+	$user = new User();
+	$user->get((int)$iduser);
+	$page = new PageAdmin();
+	$page->setTpl("users-update", array(
+		"user"=>$user->getValues()
+	));
+});
+
+//vai receber os dados via post e inserir no banco
+/*$app->post('/admin/users/create', function(){
+	User::verifyLogin();
+	$user = new User();
+	$user->setData($_POST);
+	//var_dump($_POST);
+	$user->save();
+
+});*/
+
+$app->post("/admin/users/create", function () {
+
+ 	User::verifyLogin();
+	$user = new User();
+	//verifica se o inadmin foi setado. Se foi, ele recebe o valor 1, senão 0.
+ 	$_POST["inadmin"] = (isset($_POST["inadmin"])) ? 1 : 0;
+ 	$_POST['despassword'] = password_hash($_POST["despassword"], PASSWORD_DEFAULT, [
+ 		"cost"=>12
+ 	]);
+ 	$user->setData($_POST);
+	$user->save();
+	header("Location: /admin/users");
+ 	exit;
+});
+
+$app->post('/admin/users/:iduser', function($iduser){
+	User::verifyLogin();
+	$user = new User();
+	//verifica se o inadmin foi setado. Se foi, ele recebe o valor 1, senão 0.
+	//faz a validação do inadmin para saber se é 1 ou 0;
+	$_POST["inadmin"] = (isset($_POST["inadmin"])) ? 1 : 0;
+	$user->get((int)$iduser);
+	$user->setData($_POST);
+	$user->update();
+	header("Location: /admin/users");
+	exit;
+	
+
+});
+
+$app->get('/admin/forgot', function(){
+	$page = new PageAdmin([
+		"header"=>false,
+		"footer"=>false
+		]);
+
+	$page->setTpl("forgot");
+});
+
+//verificar o arquivo forgot.html
+$app->post('/admin/forgot', function(){
+	
+	$user = User::getForgot($_POST["email"]);
+
+	//redireciona o usuário para confirmar se o email foi enviado com sucesso
+	header("Location: /admin/forgot/sent");
+	exit;
+});
+
+$app->get('/admin/forgot/sent', function(){
+	$page = new PageAdmin([
+	"header"=>false,
+	"footer"=>false
+	]);
+
+	//carrega o template (não precisa do header nem do footer neste caso).
+	$page->setTpl("forgot-sent");
+});
+
+$app->get("/admin/forgot/reset", function(){
+
+	//recupera o código para saber a qual usuário pertence
+	$user = User::validForgotDecrypt($_GET["code"]);
+	$page = new PageAdmin([
+		"header"=>false,
+		"footer"=>false
+	]);
+
+	//carrega o template (não precisa do header nem do footer neste caso).
+	$page->setTpl("forgot-reset", array(
+		"name"=>$user["desperson"],
+		"code"=>$_GET["code"]
+	));
+
+});
+
+$app->post("/admin/forgot/reset", function(){
+
+	//Verifica de novo para checar problema na segurança ===> User::validForgotDecrypt($_POST["code"]);	
+	$forgot = User::validForgotDecrypt($_POST["code"]);	
+
+	User::setForgotUsed($forgot["idrecovery"]);
+
+	$user = new User();
+
+	$user->get((int)$forgot["iduser"]); //pegando os dados do usuário
+
+	//o 'cost' é o custo para gerar o hash. Quanto maior mais seguro e gasta mais processamente,
+	//podendo derrubar o servidor. 
+	$password = password_hash($_POST["password"], PASSWORD_DEFAULT, ["cost"=>12]);
+
+	$user->setPassword($password);
+
+
+	$page = new PageAdmin([
+		"header"=>false,
+		"footer"=>false
+	]);
+
+	//carrega o template (não precisa do header nem do footer neste caso).
+	//não passa nenhuma array de dados porque o template abaixo não tem variáveis
+	$page->setTpl("forgot-reset-success");
+});
+
 
 $app->run(); //é o que faz rodar tudo que está acima
 

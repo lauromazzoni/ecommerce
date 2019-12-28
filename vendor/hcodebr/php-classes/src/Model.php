@@ -19,15 +19,12 @@ public function __call($name, $args){  //$name --> nome do método que chamou $a
 		case "get":
 			//se for get, como irá pegar o valor no banco, eu só preciso saber o nome da coluna desejada
 			return $this->values[$fieldName];
-			break;
+		break;
 
 		case "set":
 			//se for set, é preciso saber o valor a ser setado no banco.
 			return $this->values[$fieldName] = $args[0];
-			break;
-		
-		default:
-			break;
+		break;
 	}
 }
 
