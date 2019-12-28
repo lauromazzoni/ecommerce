@@ -21,6 +21,9 @@ class Category extends Model {
 		));
 
 		$this->setData($results[0]);
+
+		Category::updateFile(); // os 'dois pontos dois pontos' (::) é porque a função updateFile é estático
+
 	}
 
 	public function get($idcategory){
@@ -41,6 +44,24 @@ class Category extends Model {
 		$sql->select("DELETE FROM tb_categories WHERE idcategory = :idcategory", [
 			":idcategory"=>$this->getidcategory()
 		]);
+
+		Category::updateFile(); // os dois pontos dois pontos (::) é porque a função updateFile é estático
+	}
+
+
+	//essa função updateFile cria linhas (<li><a href="#">Categoria Um</a></li>) dinamicamente e salva dentro do arquivo categories-menu.html
+	public static function updateFile(){
+
+		$categories = Category::listAll();
+
+		$html = [];
+
+		foreach ($categories as $row) {
+			array_push($html, '<li><a href="/categories/'.$row['idcategory'].'">'.$row['descategory'].'</a></li>');
+		}
+
+		file_put_contents($_SERVER['DOCUMENT_ROOT'] . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "categories-menu.html", implode('', $html));
+
 	}
 
 
