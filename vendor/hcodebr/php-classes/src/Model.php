@@ -18,7 +18,7 @@ public function __call($name, $args){  //$name --> nome do método que chamou $a
 	switch ($method) {
 		case "get":
 			//se for get, como irá pegar o valor no banco, eu só preciso saber o nome da coluna desejada
-			return $this->values[$fieldName];
+			return (isset($this->values[$fieldName]) ? $this->values[$fieldName] : NULL); //se já foi definido, ele retorna o $this->values[$fieldName], caso contrário, retorna NULL.
 		break;
 
 		case "set":
