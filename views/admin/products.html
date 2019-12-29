@@ -40,7 +40,7 @@
                   {loop="$products"}
                   <tr>
                     <td>{$value.idproduct}</td>
-                    <td>{$value.desproduct}</td>
+                    <td><a href="/admin/products/{$value.idproduct}">{$value.desproduct}</a></td>
                     <td>{$value.vlprice}</td>
                     <td>{$value.vlwidth}</td>
                     <td>{$value.vlheight}</td>

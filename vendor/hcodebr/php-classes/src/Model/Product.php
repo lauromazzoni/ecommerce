@@ -13,6 +13,17 @@ class Product extends Model {
 		return $sql->select("SELECT * FROM tb_products ORDER BY desproduct");
 	}
 
+	public static function checkList($list){
+		foreach ($list as &$row) {
+			$p = new Product();
+			$p->setData($row);
+			$row = $p->getValues();
+		}
+		
+		//ELE ESTÁ RETORNANDO O $list POIS ELE FOI ATUALIZADO NO FOREACH POR CAUSA DO '&' ANTES DA VARIÁVEL '$row'
+		return $list;
+	}
+
 	public function save(){
 		$sql = new Sql();
 		$results = $sql->select("CALL sp_products_save(:idproduct, :desproduct, :vlprice, :vlwidth, :vlheight, :vllength, :vlweight, :desurl)", array(
@@ -48,6 +59,18 @@ class Product extends Model {
 		$sql->select("DELETE FROM tb_products WHERE idproduct = :idproduct", [
 			":idproduct"=>$this->getidproduct()
 		]);
+
+		$fileDir = $_SERVER['DOCUMENT_ROOT'] . DIRECTORY_SEPARATOR .
+			"res" . DIRECTORY_SEPARATOR .
+			"site" . DIRECTORY_SEPARATOR .
+			"img" . DIRECTORY_SEPARATOR . 
+			"products" . DIRECTORY_SEPARATOR .
+			$this->getidproduct() . ".jpg";
+
+		if (file_exists($fileDir)){
+			unlink($fileDir);
+		}
+	
 	}
 	
 	public function checkPhoto(){
