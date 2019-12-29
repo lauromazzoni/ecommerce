@@ -19,7 +19,7 @@ class Product extends Model {
 			$p->setData($row);
 			$row = $p->getValues();
 		}
-		
+
 		//ELE ESTÁ RETORNANDO O $list POIS ELE FOI ATUALIZADO NO FOREACH POR CAUSA DO '&' ANTES DA VARIÁVEL '$row'
 		return $list;
 	}

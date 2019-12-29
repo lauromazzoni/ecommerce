@@ -3,7 +3,7 @@
 use \Hcode\PageAdmin;
 use \Hcode\Model\User;
 use \Hcode\Model\Category;
-use \Hcode\Page;
+use \Hcode\Model\Product;
 
 
 $app->get("/admin/categories", function(){
@@ -99,21 +99,63 @@ $app->post("/admin/categories/:idcategory", function($idcategory){
 
 });
 
-$app->get("/categories/:idcategory", function($idcategory){
+
+$app->get("/admin/categories/:idcategory/products", function($idcategory){
+
+	//verificar se o usuário está logado para não acessar diretamente sem passar pela tela de autenticação
+	User::verifyLogin();
 
 	$category = new Category();
 
 	$category->get((int)$idcategory);
 
-	$page = new Page();
+	$page = new PageAdmin();
 
-	$page->setTpl("category", [
+	$page->setTpl("categories-products", [
 		'category'=>$category->getValues(),
-		'pruducts'=>[]
+		'productsRelated'=>$category->getProducts(true),
+		'productsNotRelated'=>$category->getProducts(false)
 	]);
-
 });
 
+$app->get("/admin/categories/:idcategory/products/:idproduct/add", function($idcategory, $idproduct){
+
+	//verificar se o usuário está logado para não acessar diretamente sem passar pela tela de autenticação
+	User::verifyLogin();
+
+	$category = new Category();
+
+	$category->get((int)$idcategory);
+
+	$product = new Product();
+
+	$product->get((int)$idproduct);
+
+	$category->addProduct($product);
+
+	header("Location: /admin/categories/".$idcategory."/products");
+	exit;
+});
+
+
+$app->get("/admin/categories/:idcategory/products/:idproduct/remove", function($idcategory, $idproduct){
+
+	//verificar se o usuário está logado para não acessar diretamente sem passar pela tela de autenticação
+	User::verifyLogin();
+
+	$category = new Category();
+
+	$category->get((int)$idcategory);
+
+	$product = new Product();
+
+	$product->get((int)$idproduct);
+
+	$category->removeProduct($product);
+
+	header("Location: /admin/categories/".$idcategory."/products");
+	exit;
+});
 
 
 
