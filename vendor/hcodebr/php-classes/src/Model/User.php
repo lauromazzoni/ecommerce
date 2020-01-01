@@ -13,6 +13,54 @@ const SESSION = "User";
 const SECRET = "HcodePhp7_Secret";
 const SECRET_IV = "HcodePhp7_Secret_IV";
 
+	public static function getFromSession(){
+
+		$user = new User();
+
+		if (isset($_SESSION[User::SESSION]) && (int)$_SESSION[User::SESSION]['iduser'] > 0){
+
+			$user->setData($_SESSION[User::SESSION]);
+
+		}
+
+		return $user;
+
+	}
+
+	public static function checkLogin($inadmin = true){
+
+		if (
+			//Verifica se a sessão do usuáro está definida. Se não está definida, estão não está logado
+			!isset($_SESSION[User::SESSION])
+			||
+			//Verifica se está vazia (ou se perdeu o valor)
+			!$_SESSION[User::SESSION]
+			||
+			//Verifica se dentro da coleção da sessão, foi setado o iduser
+			//o (int) abaixo é uma moldage de tipo. Se pegar o iduser e ele estiver vazio, quando for feito o cast para inteiro ele vai vira zero.
+			!(int)$_SESSION[User::SESSION]["iduser"] > 0
+		) {
+			//Não está logado
+			return false;
+
+		} else {
+			//$inadmin === true ---> é uma rota de administração?
+			//$_SESSION[User::SESSION]['inadmin'] ----> verifica se o usuário faz parte da administração
+			if ($inadmin === true && (booL)$_SESSION[User::SESSION]['inadmin'] === true){
+
+				return true; //é um administrador
+
+			} else if ($inadmin === false){
+
+				return true;
+			} else {
+				return false;
+			}
+
+		}
+
+	}
+
 
 	public static function login ($login, $password){
 
@@ -47,20 +95,7 @@ const SECRET_IV = "HcodePhp7_Secret_IV";
 
 	public static function verifyLogin($inadmin = true){
 
-		if (
-			//Verifica se a sessão foi definida com a constante SESSION
-			!isset($_SESSION[User::SESSION])
-			||
-			//Verifica se está vazia (ou se perdeu o valor)
-			!$_SESSION[User::SESSION]
-			||
-			//Verifica se dentro da coleção da sessão, foi setado o iduser
-			//o (int) abaixo é uma moldage de tipo. Se pegar o iduser e ele estiver vazio, quando for feito o cast para inteiro ele vai vira zero.
-			!(int)$_SESSION[User::SESSION]["iduser"] > 0
-			||
-			//Outra moldagem para booleano
-			(booL)$_SESSION[User::SESSION]["inadmin"] !== $inadmin
-		){
+		if (User::checkLogin($inadmin)){
 			header("Location: /admin/login");
 			exit;
 		}
