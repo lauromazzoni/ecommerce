@@ -36,9 +36,9 @@
                 </thead>
                 <tbody>
                   {loop="$users"}
-                  <tr>
+                  <tr onclick="document.location = '/admin/users/{$value.iduser}';">
                     <td>{$value.iduser}</td>
-                    <td><a href="/admin/users/{$value.iduser}">{$value.desperson}</a></td>
+                    <td>{$value.desperson}</td>
                     <td>{$value.desemail}</td>
                     <td>{$value.deslogin}</td/>
                     <td>{if="$value.inadmin == 1"}Sim{else}Não{/if}</td>
