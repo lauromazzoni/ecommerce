@@ -174,7 +174,9 @@ $app->get("/login", function(){
 	$page = new Page();
 
 	$page->setTpl("login", [
-		'error'=>user::getError()
+		'error'=>user::getError(),
+		'errorRegister'=>User::getErrorRegister(),
+		'registerValues'=>(isset($_SESSION['registerValues'])) ? $_SESSION['registerValues'] : ['name'=>'', 'email'=>'', 'phone'=>'']
 	]);
 });
 
@@ -200,6 +202,71 @@ $app->get("/logout", function(){
 	User::logout();
 
 	header("Location: /login");
+
+	exit;
+});
+
+
+$app->post("/register", function(){
+
+	//guarda os dados do formulário do "Criar conta" caso dê algum erro. Aí o usuário não precisa digitar tudo de novo. Por isso recebe o $_POST
+	$_SESSION['registerValues'] = $_POST;
+
+
+	if (!isset($_POST['name']) || $_POST['name'] == ''){
+
+		User::setErrorRegister("Preencha o seu nome.");
+
+		header("Location: /login");
+
+		exit;
+	}
+
+	if (!isset($_POST['email']) || $_POST['email'] == ''){
+
+		User::setErrorRegister("Preencha o seu e-mail.");
+
+		header("Location: /login");
+
+		exit;
+	}
+
+	if (!isset($_POST['password']) || $_POST['password'] == ''){
+
+		User::setErrorRegister("Preencha a sua senha.");
+
+		header("Location: /login");
+
+		exit;
+	}
+
+	if (User::checkLoginExist($_POST['email']) === true){
+
+		User::setErrorRegister("Este endereço de e-mail já está sendo utilizado. Digite outro por favor.");
+
+		header("Location: /login");
+
+		exit;
+
+	}
+
+	$user = new User();
+
+	$user->setData([
+		'inadmin'=>0,  //Está forçando o inadmin a 0 pois quem se cadastra no site não é um administrador
+		'deslogin'=>$_POST['email'],
+		'desperson'=>$_POST['name'],
+		'desemail'=>$_POST['email'],
+		'despassword'=>$_POST['password'],
+		'nrphone'=>$_POST['phone']
+	]);
+
+	$user->save();
+
+	//Se não existisse a linha logo abaixo, o usuário seria redirecionado para o /checkout e, como ele não estaria logado, seria solicitado que ele fizesse o login. Como já foi permitido a pessoa criar um usuário, porque não deixa-la logada de uma vez? Por isto, já faz a autenticação dele com a linha logo abaixo
+	User::login($_POST['email'], $_POST['password']);
+
+	header("Location: /checkout");
 
 	exit;
 });
