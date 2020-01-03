@@ -271,5 +271,76 @@ $app->post("/register", function(){
 	exit;
 });
 
+
+$app->get('/forgot', function(){
+
+	$page = new Page();
+
+	$page->setTpl("forgot");
+});
+
+//verificar o arquivo forgot.html
+$app->post('/forgot', function(){
+	
+	//o "false" é porque não é um administrador
+	$user = User::getForgot($_POST["email"], false);
+
+	//redireciona o usuário para confirmar se o email foi enviado com sucesso
+	header("Location: /forgot/sent");
+	exit;
+});
+
+$app->get('/forgot/sent', function(){
+
+	$page = new Page();
+
+	//carrega o template (não precisa do header nem do footer neste caso).
+	$page->setTpl("forgot-sent");
+});
+
+$app->get("/forgot/reset", function(){
+
+	//recupera o código para saber a qual usuário pertence
+	$user = User::validForgotDecrypt($_GET["code"]);
+	$page = new Page();
+
+
+	//carrega o template (não precisa do header nem do footer neste caso).
+	$page->setTpl("forgot-reset", array(
+		"name"=>$user["desperson"],
+		"code"=>$_GET["code"]
+	));
+
+});
+
+$app->post("/forgot/reset", function(){
+
+	//Verifica de novo para checar problema na segurança ===> User::validForgotDecrypt($_POST["code"]);	
+	$forgot = User::validForgotDecrypt($_POST["code"]);	
+
+	User::setForgotUsed($forgot["idrecovery"]);
+
+	$user = new User();
+
+	$user->get((int)$forgot["iduser"]); //pegando os dados do usuário
+
+	//o 'cost' é o custo para gerar o hash. Quanto maior mais seguro e gasta mais processamente,
+	//podendo derrubar o servidor. 
+	$password = password_hash($_POST["password"], PASSWORD_DEFAULT, ["cost"=>12]);
+
+	$user->setPassword($password);
+
+
+	$page = new Page();
+
+
+	//carrega o template (não precisa do header nem do footer neste caso).
+	//não passa nenhuma array de dados porque o template abaixo não tem variáveis
+	$page->setTpl("forgot-reset-success");
+});
+
+
+
+
 ?>
 
