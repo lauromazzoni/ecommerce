@@ -18,24 +18,26 @@ class Cart extends Model {
 
 		$cart = new Cart();
 
+		//Verifica se o nome do carrinho está na sessão ---> isset($_SESSION[Cart::SESSION]
 		//como pegar o nome da constante do carrinho da sessão?? -----> $_SESSION[Cart::SESSION]
 		//se a sessão foi definida, verificar se detro dela existe o id do carrinho e se este id é maior que zero -->$_SESSION[Cart::SESSION]['idcart'] > 0
 		//o cast para inteiro (int)----> se for vazio, na hora de fazer o cast irá retornar zero ('0').
-		if (isset($_SESSION[Cart::SESSION]) && (int)$_SESSION[Cart::SESSION]['idcart'] > 0){
-
+		if (isset($_SESSION[Cart::SESSION]) && (int)$_SESSION[Cart::SESSION]['idcart'] > 0) {
+		
+			//se a sessão existir e o idcart for maior que zero, significa que ele já está na sessão, então, o carrinho é carregado na linha abaixo
 			$cart->get((int)$_SESSION[Cart::SESSION]['idcart']);
+		
 		} else {
-
 			$cart->getFromSessionID();
 
 			//verificando se o getFromSessionID() conseguiu carregar o carrinho
 			if(!(int)$cart->getidcart() > 0 ){
 				$data = [
-					'dessessionid'=>session_id(),
+					'dessessionid'=>session_id(), //session_id() é uma função do PHP que retorno o id da sessão.
 				];
 
 				if (User::checkLogin(false)){
-					//verificadno se há um usuário logado
+					//verificadno se há um usuário logado para associa-lo à sessão
 					$user = User::getFromSession();
 					$data['iduser'] = $user->getiduser();
 				}
@@ -63,12 +65,13 @@ class Cart extends Model {
 
 		$sql = new Sql();
 
+		//se retornar algum registro, a data será setada, ser for vazio, é necessário o if da sequência para evitar um
 		$results = $sql->select("SELECT * FROM tb_carts WHERE dessessionid = :dessessionid", [
 			':dessessionid'=>$this->session_id()
 		]);
 
 		if (count($results) > 0){
-			//Inserindo os dados no objeto. Desta maneira, nao precisa usar o return
+
 			$this->setData($results[0]);
 		}
 	}
@@ -81,9 +84,7 @@ class Cart extends Model {
 
 		$sql = new Sql();
 
-		$results = $sql->select("SELECT * FROM tb_carts WHERE idcart = :idcart", [
-			':idcart'=>$idcart
-		]);
+		$results = $sql->select("SELECT * FROM tb_carts WHERE idcart = :idcart", [':idcart'=>$idcart]);
 
 		if (count($results) > 0){
 			//Inserindo os dados no objeto. Desta maneira, nao precisa usar o return
@@ -91,7 +92,8 @@ class Cart extends Model {
 		}
 	}
 
-	public function save(){
+
+	public function save()	{
 
 		$sql = new Sql();
 
@@ -101,11 +103,10 @@ class Cart extends Model {
 			':iduser'=>$this->getiduser(),
 			':deszipcode'=>$this->getdeszipcode(),
 			':vlfreight'=>$this->getvlfreight(),
-			':nrdays'=>$this->getnrdays(),
+			':nrdays'=>$this->getnrdays()
 		]);
 
 		$this->setData($results[0]);
-
 
 	}
 
@@ -122,7 +123,7 @@ class Cart extends Model {
 		$this->getCalculateTotal();
 	}
 
-
+	//$all ==> está removendo todos ou somente um item do carrinho
 	public function removeProduct(Product $product, $all = false){
 
 		$sql = new Sql();
@@ -195,16 +196,16 @@ class Cart extends Model {
 
 		$totals = $this->getProductsTotals();
 
-		if($totals['nrqtd'] > 0) {
+		if ($totals['nrqtd'] > 0) {
 
-		/*	if ($totals['vlheight'] < 2) $totals['vlheight'] = 2;
-			if ($totals['vllength'] < 16) $totals['vlheight'] = 16;*/
+			if ($totals['vlheight'] < 2) $totals['vlheight'] = 2;
+			if ($totals['vllength'] < 16) $totals['vllength'] = 16;
 
 			$qs = http_build_query([
 				'nCdEmpresa'=>'',
 				'sDsSenha'=>'',
-				'nCdServico'=>'04014',
-				'sCepOrigem'=>'36302024',
+				'nCdServico'=>'40010',
+				'sCepOrigem'=>'09853120',
 				'sCepDestino'=>$nrzipcode,
 				'nVlPeso'=>$totals['vlweight'],
 				'nCdFormato'=>'1',
@@ -227,13 +228,14 @@ class Cart extends Model {
 
 			$result = $xml->Servicos->cServico;
 
-			if ($result->MsgErro != ''){
+			if ($result->MsgErro != '') {
 
 				Cart::setMsgError($result->MsgErro);
 
 			} else {
 
 				Cart::clearMsgError();
+
 			}
 
 			$this->setnrdays($result->PrazoEntrega);
@@ -247,7 +249,9 @@ class Cart extends Model {
 		} else {
 
 
+
 		}
+
 	}
 
 	public static function formatValueToDecimal($value):float{

@@ -54,20 +54,25 @@ $app->get('/admin/users/:iduser', function($iduser){
 
 });*/
 
-$app->post("/admin/users/create", function () {
-
- 	User::verifyLogin();
-	$user = new User();
-	//verifica se o inadmin foi setado. Se foi, ele recebe o valor 1, senão 0.
- 	$_POST["inadmin"] = (isset($_POST["inadmin"])) ? 1 : 0;
- 	$_POST['despassword'] = password_hash($_POST["despassword"], PASSWORD_DEFAULT, [
- 		"cost"=>12
- 	]);
- 	$user->setData($_POST);
-	$user->save();
-	header("Location: /admin/users");
- 	exit;
-});
+    $app->post("/admin/users/create", function () {
+     
+     User::verifyLogin();
+     
+     $user = new User();
+     
+     $_POST["inadmin"] = (isset($_POST["inadmin"])) ? 1 : 0;
+     
+     $_POST['despassword'] = password_hash($_POST["despassword"], PASSWORD_BCRYPT);
+     
+     $user->setData($_POST);
+     
+     $user->save();
+     
+     header("Location: /admin/users");
+     
+     exit;
+     
+    });
 
 $app->post('/admin/users/:iduser', function($iduser){
 	User::verifyLogin();

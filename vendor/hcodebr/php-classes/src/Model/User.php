@@ -14,6 +14,7 @@ const SECRET = "HcodePhp7_Secret";
 const SECRET_IV = "HcodePhp7_Secret_IV";
 const ERROR = "UserError";
 const ERROR_REGISTER = "UserErrorRegister";
+const SUCCESS = "UserSuccess";
 
 	public static function getFromSession(){
 
@@ -39,23 +40,28 @@ const ERROR_REGISTER = "UserErrorRegister";
 			!$_SESSION[User::SESSION]
 			||
 			//Verifica se dentro da coleção da sessão, foi setado o iduser
-			//o (int) abaixo é uma moldage de tipo. Se pegar o iduser e ele estiver vazio, quando for feito o cast para inteiro ele vai vira zero.
+			//o (int) abaixo é uma moldagem de tipo. Se pegar o iduser e ele estiver vazio, quando for feito o cast para inteiro ele vai vira zero.
 			!(int)$_SESSION[User::SESSION]["iduser"] > 0
 		) {
-			//Não está logado
+			//Em qualquer uma das situações acima, o usuário não está logado, por isto, retorna falso.
 			return false;
 
 		} else {
+			//o if abaixo verifica se é uma rota da administração
 			//$inadmin === true ---> é uma rota de administração?
 			//$_SESSION[User::SESSION]['inadmin'] ----> verifica se o usuário faz parte da administração
 			if ($inadmin === true && (booL)$_SESSION[User::SESSION]['inadmin'] === true){
 
+				//usuáro está logado e é um adiminstrador	
 				return true; //é um administrador
 
 			} else if ($inadmin === false){
 
+				//tá logado mas não é um adminstrador
 				return true;
 			} else {
+
+				//não está logado
 				return false;
 			}
 
@@ -64,15 +70,16 @@ const ERROR_REGISTER = "UserErrorRegister";
 	}
 
 
-	public static function login ($login, $password){
-
+	public static function login($login, $password)
+	{
 		$sql = new Sql();
 		$results = $sql->select("SELECT * FROM tb_users a INNER JOIN tb_persons b ON a.idperson = b.idperson WHERE a.deslogin = :LOGIN", array(
 			":LOGIN"=>$login
 		)); 
+
 		if (count($results) === 0)
 		{
-			throw new \Exception("Usuário inexistente ou senha inválida.");
+			throw new \Exception("Usuário inexistente ou senha inválida .");
 		}
 		$data = $results[0];
 		if (password_verify($password, $data["despassword"]) === true)
@@ -112,9 +119,9 @@ const ERROR_REGISTER = "UserErrorRegister";
 	public function save(){
 		$sql = new Sql();
 		$results = $sql->select("CALL sp_users_save(:desperson, :deslogin, :despassword, :desemail, :nrphone, :inadmin)", array(
-			":desperson"=>utf8_decode($this->getdesperson()),
+			":desperson"=>utf8_decode($this->getdespersons()),
 			":deslogin"=>$this->getdeslogin(),
-			":despassword"=>User::getPasswordHash($this->getdespassword()),
+			":despassword"=>$this->getdespassword(),
 			":desemail"=>$this->getdesemail(),
 			":nrphone"=>$this->getnrphone(),
 			":inadmin"=>$this->getinadmin()
@@ -141,7 +148,7 @@ const ERROR_REGISTER = "UserErrorRegister";
 			":iduser"=>$this->getiduser(),
 			":desperson"=>utf8_decode($this->getdesperson()),
 			":deslogin"=>$this->getdeslogin(),
-			":despassword"=>User::getPasswordHash($this->getdespassword()),
+			":despassword"=>$this->getdespassword(),
 			":desemail"=>$this->getdesemail(),
 			":nrphone"=>$this->getnrphone(),
 			":inadmin"=>$this->getinadmin()
@@ -150,12 +157,13 @@ const ERROR_REGISTER = "UserErrorRegister";
 
 	}
 
-	public function delete(){
-
+	public function delete()
+	{
 		$sql = new Sql();
 		$sql->query("CALL sp_users_delete(:iduser)", array(
 			":iduser"=>$this->getiduser()
 		));
+		
 	}
 
 	public static function getForgot($email, $inadmin = true)
@@ -275,6 +283,29 @@ const ERROR_REGISTER = "UserErrorRegister";
 	public static function clearError(){
 
 		$_SESSION[User::ERROR] = NULL;
+
+	}
+
+
+	public static function setSuccess($msg){
+
+		$_SESSION[User::SUCCESS] = $msg;
+
+	}
+
+	public static function getSuccess(){
+
+		//ser estiver setada e não estiver vazia, retorna a $_SESSION[User::ERROR], senão retorna vazio ''.
+		$msg = (isset($_SESSION[User::SUCCESS]) && $_SESSION[User::SUCCESS]) ? $_SESSION[User::SUCCESS] : '';
+
+		User::clearSuccess();
+
+		return $msg;
+	}
+
+	public static function clearSuccess(){
+
+		$_SESSION[User::SUCCESS] = NULL;
 
 	}
 

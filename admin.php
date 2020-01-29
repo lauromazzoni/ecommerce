@@ -32,6 +32,7 @@ $app->get('/admin/login', function() {
 $app->post('/admin/login', function(){
 	//VALIDANDO O LOGIN
 
+
 	//Método estático "::login" que recebe o post do login e o post do password
 	User::login($_POST["login"], $_POST["password"]);
 
