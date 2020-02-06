@@ -65,7 +65,7 @@ class Cart extends Model {
 
 		$sql = new Sql();
 
-		//se retornar algum registro, a data será setada, ser for vazio, é necessário o if da sequência para evitar um
+		//se retornar algum registro, a data será setada, ser for vazio, é necessário o if da sequência para evitar um erro
 		$results = $sql->select("SELECT * FROM tb_carts WHERE dessessionid = :dessessionid", [
 			':dessessionid'=>$this->session_id()
 		]);
