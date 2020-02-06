@@ -51,7 +51,7 @@ $app->get("/admin/categories", function(){
 	$page = new PageAdmin();
 
 	$page->setTpl("categories", [
-		"categories"=>$pagination['data'], //o $pagination na chave 'data', contém o resultado dos usuários.
+		"categories"=>$pagination['data'], //o $pagination na chave 'data', contém o resultado das categorias.
 		"search"=>$search,
 		"pages"=>$pages
 	]);

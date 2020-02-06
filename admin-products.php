@@ -49,7 +49,7 @@ $app->get("/admin/products", function(){
 	$page = new PageAdmin();
 
 	$page->setTpl("products", [
-		"products"=>$pagination['data'], //o $pagination na chave 'data', contém o resultado dos usuários.
+		"products"=>$pagination['data'], //o $pagination na chave 'data', contém o resultado dos produtos.
 		"search"=>$search,
 		"pages"=>$pages
 	]);
