@@ -43,7 +43,7 @@ $app->get('/admin/users', function(){
 		'text'=>$x + 1
 	]);
 
-}
+	}
 
 	$page = new PageAdmin();
 

@@ -150,5 +150,64 @@ class Category extends Model {
 	}
 
 
+	//é "static" pois não utiliza o "$this"
+	//FUNÇÃO PARA A PAGINAÇÃO
+	//$page=>número de páginas
+	//$itemsPerPage => número de itens por página. A paginação (o número de páginas que aparece embaixo na tela), só comece a partir de 10 itens. Se tiver 11 usuários, será exibido "2" no botão de páginas embaixo na tela
+	public static function getPage($page = 1, $itemsPerPage = 10){
+		
+		$start = ($page - 1) * $itemsPerPage;
+
+		$sql = new Sql();
+
+
+		//resultado dos produtos
+		$results = $sql->select("
+			SELECT SQL_CALC_FOUND_ROWS *
+			FROM tb_categories
+			ORDER BY descategory
+			LIMIT $start, $itemsPerPage;
+		");
+
+		//resultado total (quantas linhas)
+		$resultTotal = $sql->select("SELECT FOUND_ROWS() AS nrtotal;");
+
+		return [
+			'data'=>$results, //número de linhas resultantes
+			'total'=>(int)$resultTotal[0]["nrtotal"], //numero total de registros
+			'pages'=>ceil($resultTotal[0]["nrtotal"] / $itemsPerPage) //número total de páginas
+		];
+	}
+
+	//é "static" pois não utiliza o "$this"	
+	public static function getPageSearch($search,$page = 1, $itemsPerPage = 10){
+		
+		$start = ($page - 1) * $itemsPerPage;
+
+		$sql = new Sql();
+
+
+		//resultado dos usuários
+		$results = $sql->select("
+			SELECT SQL_CALC_FOUND_ROWS *
+			FROM tb_categories
+			WHERE descategory LIKE :search
+			ORDER BY descategory
+			LIMIT $start, $itemsPerPage;
+		", [
+			':search'=>'%'.$search.'%'
+		]);
+
+		//resultado total (quantas linhas)
+		$resultTotal = $sql->select("SELECT FOUND_ROWS() AS nrtotal;");
+
+		return [
+			'data'=>$results, //número de linhas resultantes
+			'total'=>(int)$resultTotal[0]["nrtotal"], //numero total de registros
+			'pages'=>ceil($resultTotal[0]["nrtotal"] / $itemsPerPage) //número total de páginas
+		];
+	}
+
+
 }
 ?>
